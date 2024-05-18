@@ -1,4 +1,6 @@
-import productmodel from "../models/ProductModel.js"
+import productmodel from "../models/ProductModel.js";
+import OrderModel from '../models/OrderModel.js';
+
 const GetAllProducts = async (req, res) => {
    try{
         const products=await productmodel.find();
@@ -52,36 +54,92 @@ const AddProduct = async (req, res) => {
     }
 }
 
-// const AddProduct = async (req, res) => {
-    
-//     try{
-//         if(req.file!==undefined){
-//         const requestedBody=req.body;
-//        const url=req.protocol+'://'+req.get('host')+'/images/'+req.file.filename;
-//        const formData={...requestedBody,'imagePath':url}
-//         const product=new productmodel(formData);
-//          await product.save();
-//          res.json({"err":0,"msg":"Product Added"})
-//         }
-//         else{
-//             res.json({"err":1,"msg":"Something went wrong or already exists"});
-//         }
-//     }
-//     catch(err){
-//       res.json({"err":1,"msg":"Something went wrong or already exists"});
-//     }
-// }
 const UpdateProduct = async (req, res) => {
-    const id=req.params.id;
-    const requestedBody=req.body;
-    try{
-      const updateproduct=await productmodel.findByIdAndUpdate(id,requestedBody);
-      res.json({"err":0,"msg":"Product Updated"});
+    const id = req.params.id;
+    const requestedBody = req.body;
+
+    try {
+        // Use findByIdAndUpdate with { new: true } to return the updated document
+        const updatedProduct = await productmodel.findByIdAndUpdate(id, requestedBody, { new: true, runValidators: true });
+
+        if (!updatedProduct) {
+            return res.status(404).json({ "err": 1, "msg": "Product not found" });
+        }
+
+        res.json({ "err": 0, "msg": "Product Updated", "product": updatedProduct });
+    } catch (err) {
+        console.error(err); // Log the error for debugging
+        res.status(500).json({ "err": 1, "msg": "Something went wrong" });
     }
-    catch(err){
-        res.json({"err":1,"msg":"Something went wrong"})
+};
+
+export const placeOrder = async (req, res) => {
+    const { email, fullname, role, cartItems, totalPrice,orderStatus } = req.body;
+
+    try {
+        // Create a new order instance
+        const newOrder = new OrderModel({
+            email,
+            fullname,
+            role,
+            cartItems,
+            totalPrice,
+            orderStatus,
+        });
+
+        // Save the order to the database
+        const savedOrder = await newOrder.save();
+
+        // Respond with success message and the saved order
+        res.status(201).json({ err: 0, status:'Success', msg: 'Order placed successfully', order: savedOrder });
+    } catch (error) {
+        // Handle error if order placement fails
+        console.error(error);
+        res.status(500).json({ err: 1, msg: 'Failed to place order' });
     }
-}
+};
+
+export const getOrdersByUser = async (req, res) => {
+    const { email, role } = req.body;
+
+    try {
+        const orders = await OrderModel.find({ email, role}); // Users see only their orders
+        res.status(200).json({ orders });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+
+};
+
+export const getAllOrders = async (req, res) => {
+    const { email, role } = req.body;
+    try {
+        if(role === 'admin'){
+        const orders = await OrderModel.find(); // admin can see all orders
+        res.status(200).json({ orders });
+        }else{
+            res.json({ "err": 1, "msg": "Admin Rights Only"});
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch all orders' });
+    }
+};
+
+// Update order status
+export const updateOrderStatus = async (req, res) => {
+    const { orderId, status } = req.body;
+
+    try {
+        const order = await OrderModel.findByIdAndUpdate(orderId, { orderStatus:status }, { new: true });
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        res.status(200).json({ message: 'Order status updated', order });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update order status' });
+    }
+};
+
 const DeleteProduct = async (req, res) => {
     try{
          let id=req.params.id;

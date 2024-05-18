@@ -11,7 +11,7 @@ const SignIn=async (req,res)=>{
     if(bcrypt.compareSync(password,dbpassword)){
        const userData={
           email:user.email,
-          fullname:`${user.firstname} ${user.lastname}`,
+          fullname:`${user.firstName} ${user.lastName}`,
           role:user.role
        }
        const token=jwt.sign(userData,SecretKey,{expiresIn:"2h"});
