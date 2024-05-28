@@ -1,5 +1,7 @@
 import productmodel from "../models/ProductModel.js";
 import OrderModel from '../models/OrderModel.js';
+import mongoose from 'mongoose';
+
 
 const GetAllProducts = async (req, res) => {
    try{
@@ -55,22 +57,29 @@ const AddProduct = async (req, res) => {
 }
 
 const UpdateProduct = async (req, res) => {
-    const id = req.params.id;
-    const requestedBody = req.body;
-
     try {
-        // Use findByIdAndUpdate with { new: true } to return the updated document
-        const updatedProduct = await productmodel.findByIdAndUpdate(id, requestedBody, { new: true, runValidators: true });
-
-        if (!updatedProduct) {
-            return res.status(404).json({ "err": 1, "msg": "Product not found" });
+        const { id } = req.params; // Retrieve ID from URL parameters
+        const requestedBody = req.body;
+        console.log("update called -",id)
+        
+        if (req.file !== undefined) {
+            // Construct the URL for the uploaded image
+            const url = req.protocol + '://' + req.get('host') + '/uploads/' + req.file.filename;
+            // Combine the requested body with the image URL
+            requestedBody.imagePath = url;
         }
 
-        res.json({ "err": 0, "msg": "Product Updated", "product": updatedProduct });
+        // Find the product by ID and update it with the new data
+        await productmodel.findByIdAndUpdate(id, requestedBody);
+
+        // Respond with a success message
+        res.json({ "err": 0, "msg": "Product Updated" });
     } catch (err) {
-        console.error(err); // Log the error for debugging
+        // Respond with an error message if something goes wrong
+        console.error(err);
         res.status(500).json({ "err": 1, "msg": "Something went wrong" });
     }
+
 };
 
 export const placeOrder = async (req, res) => {
@@ -139,21 +148,27 @@ export const updateOrderStatus = async (req, res) => {
         res.status(500).json({ error: 'Failed to update order status' });
     }
 };
-
 const DeleteProduct = async (req, res) => {
-    try{
-         let id=req.params.id;
-         const product=await productmodel.findByIdAndDelete(id);
-         if(!product){
-            res.json({"err":1,"msg":"Product Not found"});
-         }
-         else{
-            res.json({"err":0,"msg":"Product Deleted"});
-         }
-    }
-    catch(err){
-        res.json({"err":1,"msg":"Something went wrong"})
-    }
+    const { id } = req.params; // Retrieve ID from URL parameters
+    try {
+        console.log("Received ID to delete:", id);
 
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ "err": 1, "msg": "Invalid ID format" });
+        }
+
+        const product = await productmodel.findByIdAndDelete(id);
+
+        if (!product) {
+            return res.status(404).json({ "err": 1, "msg": "Product Not found" });
+        }
+
+        res.json({ "err": 0, "msg": "Product Deleted" });
+    } catch (err) {
+        console.error("Error deleting product:", err);
+        res.status(500).json({ "err": 1, "msg": "Something went wrong" });
+    }
 }
+
+
 export { GetAllProducts, AddProduct, UpdateProduct, DeleteProduct,getProductById,getAllCategory };
