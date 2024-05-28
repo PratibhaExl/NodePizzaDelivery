@@ -33,7 +33,7 @@ const getProductById=async (req,res)=>{
 }
 const AddProduct = async (req, res) => {
     try {
-        if (req.file !== undefined) {
+        if (req.file !== undefined) {p
             const requestedBody = req.body;
             // Construct the URL for the uploaded image
             const url = req.protocol + '://' + req.get('host') + '/uploads/' + req.file.filename;
@@ -44,7 +44,7 @@ const AddProduct = async (req, res) => {
             // Save the product to the database
             await product.save();
             // Respond with a success message and the image URL
-            res.json({ "err": 0, "msg": "Product Added", "imagePath": url });
+            res.json({ "err": 0, "msg": "Product Added Successfully", "imagePath": url });
         } else {
             // Respond with an error message if no file was uploaded
             res.json({ "err": 1, "msg": "No file uploaded" });
@@ -73,7 +73,7 @@ const UpdateProduct = async (req, res) => {
         await productmodel.findByIdAndUpdate(id, requestedBody);
 
         // Respond with a success message
-        res.json({ "err": 0, "msg": "Product Updated" });
+        res.json({ "err": 0, "msg": "Product Updated Successfully" });
     } catch (err) {
         // Respond with an error message if something goes wrong
         console.error(err);
