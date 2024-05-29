@@ -1,29 +1,57 @@
-
-import multer from 'multer';
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, './uploads/');
+import multer from "multer";
+const storage=multer.diskStorage({
+    destination:(req,file,cb)=>{
+        cb(null,'./uploads/')
     },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + file.originalname);
+    filename:(req,file,cb)=>{
+        cb(null,Date.now()+file.originalname)
     }
-});
-
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png') {
-        cb(null, true);
-    } else {
-        cb(null, false);
+})
+const fileFilter=(req,file,cb)=>{
+    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' ||file.mimetype === 'image/png'){
+        cb(null,true)
     }
-};
-
-const uploadFile = multer({
-    storage: storage,
-    limits: {
-        fileSize: 1024 * 1024 * 4
+    else{
+        cb(null,false)
+    }
+}
+const uploadFile=multer({
+    storage:storage,
+    limits:{
+        fileSize:1024*1024*4
     },
-    fileFilter: fileFilter
-});
-
+    fileFilter:fileFilter
+})
 export default uploadFile;
+
+
+
+
+// import multer from 'multer';
+
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, './uploads/');
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + file.originalname);
+//     }
+// });
+
+// const fileFilter = (req, file, cb) => {
+//     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png') {
+//         cb(null, true);
+//     } else {
+//         cb(null, false);
+//     }
+// };
+
+// const uploadFile = multer({
+//     storage: storage,
+//     limits: {
+//         fileSize: 1024 * 1024 * 4
+//     },
+//     fileFilter: fileFilter
+// });
+
+// export default uploadFile;

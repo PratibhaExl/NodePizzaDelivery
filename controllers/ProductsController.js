@@ -33,7 +33,7 @@ const getProductById=async (req,res)=>{
 }
 const AddProduct = async (req, res) => {
     try {
-        if (req.file !== undefined) {p
+        if (req.file !== undefined) {
             const requestedBody = req.body;
             // Construct the URL for the uploaded image
             const url = req.protocol + '://' + req.get('host') + '/uploads/' + req.file.filename;
